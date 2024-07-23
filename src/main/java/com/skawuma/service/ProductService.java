@@ -2,31 +2,57 @@ package com.skawuma.service;
 
 import com.skawuma.entity.Product;
 import com.skawuma.repository.ProductRepository;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 @Service
+@Slf4j
+@CacheConfig(cacheNames = "products")//configuring cache globally to avoid repetitive calls on each method
 public class ProductService {
     @Autowired
     private ProductRepository repository;
 
+    @PostConstruct
+    public void initDB(){
+      List<Product>  products = IntStream.rangeClosed(1,1000)
+                .mapToObj(i-> new Product("product"+i,new Random().nextInt(5000),
+                "desc"+i,"type"+i))
+                        .collect(Collectors.toList());
+      repository.saveAll(products);
+    }
+    @CachePut(key = "#product.id")
     public Product saveProduct(Product product) {
+
         return repository.save(product);
     }
-
+    @Cacheable
     public List<Product> getProducts() {
+
+
         return repository.findAll();
     }
-
+    @CachePut(key = "#id")
     public Product getProductById(int id) {
+
         return repository.findById(id).get();
     }
 
     public Product getProductByName(String name) {
+
         return repository.findByName(name);
     }
 
@@ -41,7 +67,7 @@ public class ProductService {
     public List<Product> getProductsByPrice(double price) {
         return repository.getProductByPrice(price);
     }
-
+    @CachePut(key = "#id")
     public Product updateProduct(int id, Product productRequest) {
         // get the product from DB by id
         // update with new value getting from request
@@ -52,7 +78,7 @@ public class ProductService {
         existingProduct.setProductType(existingProduct.getProductType());
         return repository.save(existingProduct);
     }
-
+@CacheEvict(key = "#id")
     public long deleteProduct(int id) {
         repository.deleteById(id);
         return repository.count();

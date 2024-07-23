@@ -54,4 +54,11 @@ public class Product {
         this.description = description;
         this.productType = productType;
     }
+
+    public Product(String name, double price, String description, String productType) {
+        this.name = name;
+        this.price = price;
+        this.description = description;
+        this.productType = productType;
+    }
 }

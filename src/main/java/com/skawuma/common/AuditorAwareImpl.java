@@ -12,6 +12,6 @@ public class AuditorAwareImpl implements AuditorAware<String> {
         //SecurityContextHolder
         //get the principal
         //get the user (NAME)
-        return Optional.of("Saroj");
+        return Optional.of("skawuma");
     }
 }
